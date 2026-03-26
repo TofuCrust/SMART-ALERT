@@ -1,0 +1,39 @@
+name: Deploy Smart Alert via Tailscale
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Campus Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tarik Kode (Checkout)
+        uses: actions/checkout@v4
+
+      - name: Connect to Tailscale VPN
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Eksekusi SSH dan Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 42022  # Port SSH custom milik kampusmu
+          script: |
+            cd ~/smart-alert
+            
+            # Setup Git kredensial menggunakan PAT Token
+            git remote set-url origin https://${{ github.actor }}:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
+            
+            # Tarik pembaruan konfigurasi
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Restart layanan dengan konfigurasi baru
+            docker compose up -d --build
