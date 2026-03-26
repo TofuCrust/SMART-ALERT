@@ -1,0 +1,13 @@
+# Abaikan folder data database dan n8n
+postgres_data/
+n8n_data/
+
+# Abaikan file kredensial rahasia
+.env
+
+# Abaikan file database Grafana (karena isinya data dinamis)
+grafana.db
+
+# Abaikan file log atau temporary lainnya
+*.log
+.DS_Store
